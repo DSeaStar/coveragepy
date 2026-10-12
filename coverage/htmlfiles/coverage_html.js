@@ -190,6 +190,15 @@ coverage.wire_up_filter = function () {
     const footer = table.tFoot.rows[0];
     const ratio_columns = Array.from(footer.cells).map(cell => Boolean(cell.dataset.ratio));
 
+    // What the server rendered, kept so the unfiltered view can be shown
+    // exactly as generated.  A report can omit rows the totals still count
+    // (--skip-covered drops fully covered files, for example), and rows that
+    // were never sent can't be summed back in.
+    const server_cells = Array.from(footer.cells).map(cell => ({
+        text: cell.textContent,
+        ratio: cell.dataset.ratio,
+    }));
+
     // Observe filter keyevents.
     const filter_handler = (event => {
         // Keep running total of each metric, first index contains number of shown rows
@@ -206,6 +215,7 @@ coverage.wire_up_filter = function () {
         localStorage.setItem(coverage.HIDE100_STORAGE, JSON.stringify(hide100));
 
         // Hide / show elements.
+        let hidden_rows = 0;
         table_body_rows.forEach(row => {
             var show = false;
             // Check the text filter.
@@ -231,6 +241,7 @@ coverage.wire_up_filter = function () {
             if (!show) {
                 // hide
                 row.classList.add("hidden");
+                hidden_rows++;
                 return;
             }
 
@@ -268,11 +279,24 @@ coverage.wire_up_filter = function () {
         no_rows.style.display = null;
         table.style.display = null;
 
+        // Every row the server sent is on screen, so the totals it computed
+        // are still the answer: show them as generated instead of adding the
+        // rows up again.
+        const nothing_hidden = (hidden_rows === 0);
+
         // Calculate new dynamic sum values based on visible rows.
         for (let column = 0; column < totals.length; column++) {
             // Get footer cell element.
             const cell = footer.cells[column];  // nosemgrep: eslint.detect-object-injection
             if (cell.matches(".name, .spacer")) {
+                continue;
+            }
+
+            if (nothing_hidden) {
+                cell.textContent = server_cells[column].text;  // nosemgrep: eslint.detect-object-injection
+                if (ratio_columns[column]) {
+                    cell.dataset.ratio = server_cells[column].ratio;  // nosemgrep: eslint.detect-object-injection
+                }
                 continue;
             }
 

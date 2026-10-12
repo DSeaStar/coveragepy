@@ -35,7 +35,10 @@ Unreleased
   recomputed in JavaScript with rounding that could disagree with the total
   the server rendered in the heading, including showing ``100%`` when coverage
   was not complete.  The footer now clamps and rounds the way the rest of the
-  report does, so the two can't disagree.  Fixes `issue 2256`_.
+  report does, so the two can't disagree.  When nothing is filtered out the
+  footer is shown exactly as the server rendered it, so rows the report omits
+  (``--skip-covered`` drops fully covered files) can't be left out of the total
+  either.  Fixes `issue 2256`_.
 
 .. _issue 1563: https://github.com/coveragepy/coveragepy/issues/1563
 .. _issue 2256: https://github.com/coveragepy/coveragepy/issues/2256
