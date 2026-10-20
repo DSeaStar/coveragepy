@@ -34,6 +34,11 @@ Unreleased
   cores hid the problem but still counted the phantom branches in the total.
   Closes `issue 1987`_.
 
+- Fix: a ``with`` statement at the end of a ``finally`` clause could raise
+  ``KeyError`` while computing possible branches, if the ``try`` clause
+  could not complete normally, for example because it ends with ``return``
+  or ``raise``.  This is now fixed.  Closes `issue 1987`_.
+
 - Fix: a comment or string that merely mentioned ``if True:`` or
   ``while True:`` could mark its line as a branch that is known to be partial,
   so a branch that never ran was reported as taken.  These built-in patterns
